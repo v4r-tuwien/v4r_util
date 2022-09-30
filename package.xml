@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>v4r_util</name>
+  <version>0.0.0</version>
+  <description>The v4r_util package</description>
+
+  <maintainer email="alexander.e360.haberl@tuwien.ac.at">Alexander Haberl</maintainer>
+
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>vision_msgs</depend>
+  <depend>tf2_sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

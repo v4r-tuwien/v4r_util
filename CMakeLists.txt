@@ -7,6 +7,7 @@ find_package(catkin REQUIRED
     vision_msgs
     tf2_sensor_msgs
     visualization_msgs
+    geometry_msgs
     )
 
 

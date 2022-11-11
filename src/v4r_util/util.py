@@ -1,12 +1,14 @@
 ﻿import copy
 import numpy as np
 import open3d as o3d
+import compas.geometry.bbox as compas_bb
+import tf
 from scipy.spatial.transform import Rotation as R
 import rospy
 from vision_msgs.msg import BoundingBox3D, BoundingBox3DArray
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from visualization_msgs.msg import Marker, MarkerArray
-import compas.geometry.bbox as compas_bb
+from geometry_msgs.msg import PoseStamped
 
 
 def o3d_bb_to_ros_bb(o3d_bb):
@@ -131,3 +133,29 @@ def get_minimum_oriented_bounding_box(o3d_pc):
     o3d_bb = o3d.geometry.OrientedBoundingBox.create_from_points(
         o3d.utility.Vector3dVector(bb_points))
     return o3d_bb
+
+
+def transform_pose(target_frame, source_frame, pose):
+    '''
+    Transforms pose from source_frame to target_frame using tf.
+    Input: string target_frame
+           string source_frame
+           geometry_msgs/Pose pose
+    Output: geometry_msgs/PoseStamped transformed_pose
+    '''
+    # transform pose from source to target frame
+    source_pose = PoseStamped()
+    source_pose.header.frame_id = source_frame
+    source_pose.header.stamp = rospy.Time(0)
+    source_pose.pose = pose
+
+    listener = tf.TransformListener()
+    listener.waitForTransform(
+        source_frame, target_frame, rospy.Time(0), rospy.Duration(4.0))
+
+    try:
+        target_pose = listener.transformPose(target_frame, source_pose)
+    except tf.Exception:
+        rospy.logerr("Transform failure")
+
+    return target_pose

@@ -8,7 +8,7 @@ import rospy
 from vision_msgs.msg import BoundingBox3D, BoundingBox3DArray
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Pose
 
 
 def o3d_bb_to_ros_bb(o3d_bb):
@@ -159,3 +159,40 @@ def transform_pose(target_frame, source_frame, pose):
         rospy.logerr("Transform failure")
 
     return target_pose
+
+
+def transformPoseFormat(pose, format_str):
+    if format_str == "tuple":
+        new = Pose()
+        new.position.x = pose.pos.x
+        new.position.y = pose.pos.y
+        new.position.z = pose.pos.z
+        new.orientation.x = pose.ori.x
+        new.orientation.y = pose.ori.y
+        new.orientation.z = pose.ori.z
+        new.orientation.w = pose.ori.w
+        return new
+    elif format_str == "pose":
+        return ((pose.position.x, pose.position.y, pose.position.z), (pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w))
+    else:
+        return None
+
+
+def transform_bounding_box(ros_bb, source_frame, target_frame):
+    listener = tf.TransformListener()
+    o3d_bb = ros_bb_to_o3d_bb(ros_bb)
+    listener.waitForTransform(
+        source_frame, target_frame, rospy.Time(0), rospy.Duration(4.0))
+
+    try:
+        trans, rot = listener.lookupTransform(
+            target_frame, source_frame, rospy.Time(0))
+    except tf.Exception as e:
+        rospy.logerr(f"Transform failure: {e}")
+        return ros_bb
+    rot_mat = R.from_quat(rot).as_matrix()
+    # hopefully correct order
+    o3d_bb.translate(trans)
+    o3d_bb.rotate(rot_mat)
+
+    return o3d_bb_to_ros_bb(o3d_bb)

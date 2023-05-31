@@ -11,7 +11,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import PoseStamped, Pose
 from geometry_msgs.msg import Point, Quaternion
 
-
+#TODO should probably split into transform.py and bbstuff.py
 def o3d_bb_to_ros_bb(o3d_bb):
     '''
     Converts open3d OrientedBoundingBox to ros BoundingBox3D.

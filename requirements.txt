@@ -1,5 +1,6 @@
-﻿numpy
-open3d==0.15.2
+﻿#TODO maybe split into multiple requirements.txt for each 'module'
+numpy
+open3d==0.17.0
 scipy>=1.4.0
-compas
 tf
+open3d_ros_helper

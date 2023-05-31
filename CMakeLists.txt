@@ -8,6 +8,8 @@ find_package(catkin REQUIRED
     tf2_sensor_msgs
     visualization_msgs
     geometry_msgs
+    sensor_msgs
+    ros_numpy
     )
 
 

@@ -1,7 +1,6 @@
 ﻿import copy
 import numpy as np
 import open3d as o3d
-import compas.geometry.bbox as compas_bb
 import tf
 from scipy.spatial.transform import Rotation as R
 import rospy
@@ -129,11 +128,7 @@ def get_minimum_oriented_bounding_box(o3d_pc):
     Input: open3d.geometry.PointCloud o3d_pc
     Output: open3d.geometry.OrientedBoundingBox o3d_bb
     '''
-    bb_points = np.asarray(
-        compas_bb.oriented_bounding_box_numpy(np.asarray(o3d_pc.points)))
-    o3d_bb = o3d.geometry.OrientedBoundingBox.create_from_points(
-        o3d.utility.Vector3dVector(bb_points))
-    return o3d_bb
+    return o3d_pc.get_minimal_oriented_bounding_box(robust=True)
 
 
 def transform_pose(target_frame, source_frame, pose, listener=None):

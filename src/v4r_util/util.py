@@ -8,9 +8,26 @@ from vision_msgs.msg import BoundingBox3D, BoundingBox3DArray
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import PoseStamped, Pose
-from geometry_msgs.msg import Point, Quaternion
+from geometry_msgs.msg import Point, Quaternion, Vector3
+from grasping_pipeline_msgs.msg import BoundingBox3DStamped
+from std_msgs.msg import Header
 
 #TODO should probably split into transform.py and bbstuff.py
+
+def create_ros_bb_stamped(center, extent, rot_mat, frame_id, stamp):
+    pos = Point(x = center[0], y = center[1], z = center[2])
+    rot_mat_np = np.array(rot_mat)
+    rot = R.from_matrix(rot_mat_np)
+    quat = rot.as_quat()
+    quat_ros = Quaternion(x = quat[0], y = quat[1], z = quat[2], w = quat[3])
+    pose = Pose(position = pos, orientation = quat_ros)
+
+    size = Vector3(x = extent[0], y = extent[1], z = extent[2])
+
+    header = Header(frame_id = frame_id, stamp = stamp)
+
+    return BoundingBox3DStamped(center = pose, size = size, header = header)
+
 def o3d_bb_to_ros_bb(o3d_bb):
     '''
     Converts open3d OrientedBoundingBox to ros BoundingBox3D.
@@ -34,6 +51,20 @@ def o3d_bb_to_ros_bb(o3d_bb):
 
     return ros_bb
 
+def o3d_bb_to_ros_bb_stamped(o3d_bb, frame_id, stamp):
+    '''
+    Converts open3d OrientedBoundingBox to ros BoundingBox3DStamped.
+    Input: open3d.geometry.OrientedBoundingBox o3d_bb
+    Output: v4r_msgs/BoundingBox3DStamped ros_bb
+    '''
+    ros_bb = o3d_bb_to_ros_bb(o3d_bb)
+    header = Header(frame_id = frame_id, stamp = stamp)
+    ros_bb_stamped = BoundingBox3DStamped(
+        position = ros_bb.position, 
+        orientation = ros_bb.orientation,
+        header = header
+        )
+    return ros_bb_stamped
 
 def ros_bb_to_o3d_bb(ros_bb):
     '''

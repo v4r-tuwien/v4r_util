@@ -15,6 +15,7 @@
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>ros_numpy</depend>
+  <depend>grasping_pipeline_msgs</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

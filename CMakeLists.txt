@@ -10,6 +10,7 @@ find_package(catkin REQUIRED
     geometry_msgs
     sensor_msgs
     ros_numpy
+    grasping_pipeline_msgs
     )
 
 

@@ -60,8 +60,8 @@ def o3d_bb_to_ros_bb_stamped(o3d_bb, frame_id, stamp):
     ros_bb = o3d_bb_to_ros_bb(o3d_bb)
     header = Header(frame_id = frame_id, stamp = stamp)
     ros_bb_stamped = BoundingBox3DStamped(
-        position = ros_bb.position, 
-        orientation = ros_bb.orientation,
+        center = ros_bb.center,
+        size = ros_bb.size,
         header = header
         )
     return ros_bb_stamped

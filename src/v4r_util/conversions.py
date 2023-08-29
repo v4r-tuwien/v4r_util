@@ -28,7 +28,7 @@ def pose_to_transform_stamped(pose, origin_frame, child_frame, stamp):
     t.header.frame_id = origin_frame
     t.child_frame_id = child_frame
     t.transform.translation =  point_to_vector3(pose.position)
-    t.transform.orientation = pose.orientation
+    t.transform.rotation = pose.orientation
     
     return deepcopy(t)
 

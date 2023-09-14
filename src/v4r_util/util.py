@@ -83,6 +83,16 @@ def ros_bb_to_o3d_bb(ros_bb):
 
     return o3d_bb
 
+def ros_bb_arr_to_o3d_bb_list(ros_bb_arr):
+    '''
+    Converts ros BoundingBox3DArray to a list of open3d OrientedBoundingBoxes.
+    Input: vision_msgs/BoundingBox3DArray ros_bb_arr
+    Output: list[Open3d.geometry.OrientedBoundingBox] o3d_bb_list
+    '''
+    o3d_bb_list = []
+    for ros_bb in ros_bb_arr.boxes:
+        o3d_bb_list.append(ros_bb_to_o3d_bb(ros_bb))
+    return o3d_bb_list
 
 def transformPointCloud(cloud, target_frame, source_frame, tf_buffer):
     ''' 
@@ -101,6 +111,24 @@ def transformPointCloud(cloud, target_frame, source_frame, tf_buffer):
         transformedCloud = do_transform_cloud(cloud, transform)
         return transformedCloud
 
+def ros_bb_to_rviz_marker(ros_bb, ns="sasha"):
+    '''
+    Converts BoundingBox3D into rviz Marker.
+    Input: grasping_pipeline_msgs/BoundingBox3DStamped ros_bb
+    Output: visualization_msgs/Marker marker
+    '''
+    marker = Marker()
+    marker.header.frame_id = ros_bb.header.frame_id
+    marker.header.stamp = rospy.Time.now()
+    marker.ns = ns
+    marker.id = 0
+    marker.type = marker.CUBE
+    marker.action = marker.ADD
+    marker.pose = ros_bb.center
+    marker.scale = ros_bb.size
+    marker.color.g = 1.0
+    marker.color.a = 0.6
+    return marker
 
 def ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, clear_old_markers=True):
     '''

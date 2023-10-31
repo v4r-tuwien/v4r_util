@@ -2,6 +2,7 @@ from copy import deepcopy
 import std_msgs
 import geometry_msgs
 from grasping_pipeline_msgs.msg import BoundingBox3DStamped
+from scipy.spatial.transform import Rotation as R
 
 def point_to_vector3(point):
     '''
@@ -72,3 +73,39 @@ def bounding_box_to_bounding_box_stamped(bounding_box, frame_id, stamp):
         center = bounding_box.center,
         size = bounding_box.size
         )
+    
+def rot_mat_to_quat(rot_mat):
+    '''
+    np.array of shape (3,3) to geometry_msgs/Quaternion
+    '''
+    quat = R.from_matrix(rot_mat).as_quat()
+    return geometry_msgs.msg.Quaternion(
+        x = quat[0], y = quat[1], z = quat[2], w = quat[3])
+    
+def quat_to_rot_mat(quat):
+    '''
+    geometry_msgs/Quaternion to np.array of shape (3,3)
+    '''
+    quat = [quat.x, quat.y, quat.z, quat.w]
+    return R.from_quat(quat).as_matrix()
+
+def np_transform_to_ros_transform(transform):
+    '''
+    np.array of shape (4,4) to geometry_msgs/Transform
+    '''
+    t = geometry_msgs.msg.Transform()
+    t.translation = list_to_vector3(transform[:3,3])
+    t.rotation = rot_mat_to_quat(transform[:3,:3])
+    
+    return deepcopy(t)
+
+    
+def np_transform_to_ros_pose(transform):
+    '''
+    np.array of shape (4,4) to geometry_msgs/Pose
+    '''
+    p = geometry_msgs.msg.Pose()
+    p.position = list_to_vector3(transform[:3,3])
+    p.orientation = rot_mat_to_quat(transform[:3,:3])
+    
+    return deepcopy(p)

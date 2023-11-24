@@ -1,4 +1,5 @@
 from copy import deepcopy
+import numpy as np
 import std_msgs
 import geometry_msgs
 from grasping_pipeline_msgs.msg import BoundingBox3DStamped
@@ -109,3 +110,23 @@ def np_transform_to_ros_pose(transform):
     p.orientation = rot_mat_to_quat(transform[:3,:3])
     
     return deepcopy(p)
+
+def ros_pose_to_np_transform(pose):
+    '''
+    geometry_msgs/Pose to np.array of shape (4,4)
+    '''
+    transform = np.eye(4)
+    transform[:3,:3] = quat_to_rot_mat(pose.orientation)
+    transform[:3,3] = vector3_to_list(pose.position)
+    
+    return deepcopy(transform)
+
+def ros_poses_to_np_transforms(poses):
+    '''
+    list of geometry_msgs/Pose to list of np.array of shape (4,4)
+    '''
+    transforms = []
+    for pose in poses:
+        transforms.append(ros_pose_to_np_transform(pose))
+    
+    return deepcopy(transforms)

@@ -273,7 +273,6 @@ class cmap():
             if perc < 0.0:
                 perc = 0.0
             cmap_idx = int(perc * max_idx)
-            print(cmap_idx)
             r, g, b = _magma_data[cmap_idx]
             rgb_arr[perc == percentages,:] = (r, g, b, 1.0)
             

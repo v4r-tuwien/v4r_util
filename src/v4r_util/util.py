@@ -107,7 +107,10 @@ def transformPointCloud(cloud, target_frame, source_frame, tf_buffer):
         try:
             transform = tf_buffer.lookup_transform(
                 target_frame, source_frame, rospy.Time())
-        except:
+        except Exception as e:
+            rospy.logwarn(
+                "Could not get transform from %s to %s, retrying. Error: %s", source_frame, target_frame, e)
+            rospy.sleep(0.1)
             continue
         transformedCloud = do_transform_cloud(cloud, transform)
         return transformedCloud

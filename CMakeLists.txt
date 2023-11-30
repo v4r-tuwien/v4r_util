@@ -10,7 +10,9 @@ find_package(catkin REQUIRED
     geometry_msgs
     sensor_msgs
     ros_numpy
-    grasping_pipeline_msgs
+    #TODO fix circular dependency properly:
+    # v4r_util <=> table_plane_extractor <=> grasping_pipeline_msgs
+    # grasping_pipeline_msgs
     )
 
 

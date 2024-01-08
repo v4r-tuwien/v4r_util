@@ -20,14 +20,14 @@ class PoseEstimationVisualizer():
         fy = intrinsics_matrix[4]
         cx = intrinsics_matrix[2]
         cy = intrinsics_matrix[5]
-        pinhole = o3d.camera.PinholeCameraIntrinsic(
+        self.pinhole = o3d.camera.PinholeCameraIntrinsic(
             image_width, 
             image_height, 
             fx, 
             fy, 
             cx, 
             cy)
-        self.renderer.setup_camera(pinhole, np.eye(4))
+        self.renderer.setup_camera(self.pinhole, np.eye(4))
 
     def create_visualization(self, image_scene, model_poses, model_meshes, model_names):
         '''
@@ -54,6 +54,11 @@ class PoseEstimationVisualizer():
             mtl.shader = "defaultUnlit"
         
             self.renderer.scene.add_geometry(name, mesh, mtl)
+            # need to setup camera EVERYTIME AFTER adding the geometry because setup_camera()
+            # uses the models/geometry in the scene to determine the near and far plane, 
+            # otherwise objects are clipped if they are further away than 1 meter (default far plane)
+            # Unfortunately there is no way to change the near and far plane manually :))
+            self.renderer.setup_camera(self.pinhole, np.eye(4))
 
             image_model = self.renderer.render_to_image()
             self.renderer.scene.remove_geometry(name)
@@ -61,9 +66,15 @@ class PoseEstimationVisualizer():
         
             valid_pts = image_model >= 200 # Remove some artifacts from o3d rendering
             image_model[~valid_pts] = 0
+
+            if np.sum(image_model) == 0:
+                print(f"PoseEstimVis: No pixels were rendered for model {name}")
+                continue
+            
         
             contours, hierarchy = cv2.findContours(image_model[:,:,0], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             image_scene_with_model = cv2.drawContours(output_image, contours, -1, (0,255,0), 2)
+            
             text_starting_point = (np.min(contours[0][:,:,0]), np.max(contours[0][:,:,1]) + 13)
             output_image = cv2.putText(
                 image_scene_with_model, 

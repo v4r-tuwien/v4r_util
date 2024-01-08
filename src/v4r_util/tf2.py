@@ -4,7 +4,8 @@ import rospy
 import tf2_geometry_msgs
 import tf2_ros
 import transforms3d
-from geometry_msgs.msg import Point, Quaternion
+from std_msgs.msg import Header
+from geometry_msgs.msg import Point, Quaternion, Vector3Stamped, Vector3
 from v4r_util.conversions import pose_to_transform_stamped
 from scipy.spatial.transform import Rotation as R
 from grasping_pipeline_msgs.msg import BoundingBox3DStamped
@@ -123,6 +124,24 @@ class TF2Wrapper:
             t = self.get_transform_between_frames(vector3.header.frame_id, target_frame, vector3.header.stamp)
             p = tf2_geometry_msgs.do_transform_vector3(vector3, t)
             return p
+    
+    def transform_3d_array(self, source_frame, target_frame, array):
+        """Transform 3d array from source_frame to target_frame
+        
+        Args:
+            source_frame (str): Name of the source frame.
+            target_frame (str): Name of the target frame.
+            array (np.ndarray): 3d array representing a vector 
+                that should be transformed from source to target frame
+            
+        Returns:
+            np.ndarray: Transformed 3d array.
+        """
+        header = Header(frame_id = source_frame, stamp = rospy.Time.now())
+        vec = Vector3Stamped(header=header, vector=Vector3(x=array[0], y=array[1], z=array[2]))
+        transformed_vec = self.transform_vector3(target_frame, vec).vector
+        transformed_array = [transformed_vec.x, transformed_vec.y, transformed_vec.z]
+        return np.array(transformed_array)
 
     def transform_bounding_box(self, ros_bb, target_frame):
         '''

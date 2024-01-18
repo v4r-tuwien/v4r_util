@@ -414,3 +414,37 @@ def rotmat_around_axis(axis, angle):
     rot_mat[2, 2] = np.cos(angle) + axis[2]**2 * (1 - np.cos(angle))
     
     return rot_mat
+
+def transform_bounding_box_w_transform(ros_bb, transform):
+    trans = np.array(
+        [transform.translation.x, transform.translation.y, transform.translation.z])
+    rot = np.array([transform.rotation.x, transform.rotation.y,
+                transform.rotation.z, transform.rotation.w])
+    rot = rot/np.linalg.norm(rot)
+    rot_mat = R.from_quat(rot).as_matrix()
+
+    transform = np.eye(4)
+    transform[:3, :3] = rot_mat
+    transform[:3, 3] = trans
+
+    bb_pose = np.eye(4)
+    bb_center = np.array(
+        [ros_bb.center.position.x, ros_bb.center.position.y, ros_bb.center.position.z])
+    bb_pose[:3, 3] = bb_center
+    bb_quat = ros_bb.center.orientation
+    bb_rot = R.from_quat([bb_quat.x, bb_quat.y, bb_quat.z, bb_quat.w])
+    bb_rot_mtx = bb_rot.as_matrix()
+    bb_pose[:3, :3] = bb_rot_mtx
+
+    transformed_pose = transform@bb_pose
+    rot = R.from_matrix(transformed_pose[:3, :3])
+    quat = rot.as_quat()
+
+    transformed_bb = BoundingBox3D()
+    transformed_bb.center.position = Point(
+        transformed_pose[0, 3], transformed_pose[1, 3], transformed_pose[2, 3])
+    transformed_bb.center.orientation = Quaternion(
+        quat[0], quat[1], quat[2], quat[3])
+    transformed_bb.size = ros_bb.size
+
+    return transformed_bb

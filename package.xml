@@ -15,9 +15,7 @@
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>ros_numpy</depend>
-  <!-- TODO fix circular dependency properly -->
-  <!-- v4r_util <=> table_plane_extractor <=> grasping_pipeline_msgs -->
-  <!-- <depend>grasping_pipeline_msgs</depend> -->
+  <depend>grasping_pipeline_msgs</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

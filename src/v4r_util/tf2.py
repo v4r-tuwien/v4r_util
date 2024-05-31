@@ -220,3 +220,13 @@ class TF2Wrapper:
         """
         q = R.from_matrix(rotmat).as_quat()
         return Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
+
+    def trans2transmat(self, trans):
+
+        rot = transforms3d.quaternions.quat2mat(
+            [trans.transform.rotation.w, trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z])
+        transmat = np.eye(4)
+        transmat[:3, :3] = rot
+        transmat[:3, 3] = [trans.transform.translation.x,
+                        trans.transform.translation.y, trans.transform.translation.z]
+        return transmat

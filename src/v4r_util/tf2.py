@@ -58,7 +58,10 @@ class TF2Wrapper:
                 raise TimeoutError("[" + rospy.get_name() + f"]: Transform FAILURE: '{source_frame}' to '{target_frame}': Timeout")
             try:
                 if stamp is None:
-                    stamp = rospy.Time.now()
+                    # Used to be rospy.Time.now(), but this often caused transform failures
+                    # rospy.Time(0) uses the latest available transform
+                    # https://answers.ros.org/question/243179/whats-the-diff-between-rospytime0-and-rospytimenow/
+                    stamp = rospy.Time(0)
                 trans = self.tf2buffer.lookup_transform(
                     target_frame, 
                     source_frame, 

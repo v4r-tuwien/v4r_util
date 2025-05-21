@@ -5,8 +5,12 @@ import tf2_geometry_msgs
 import tf2_ros
 import transforms3d
 from std_msgs.msg import Header
-from geometry_msgs.msg import Point, Quaternion, Vector3Stamped, Vector3
-from v4r_util.conversions import pose_to_transform_stamped
+from geometry_msgs.msg import Point, Quaternion, Vector3Stamped, Vector3, Transform, TransformStamped
+from nav_msgs.msg import Path
+from vision_msgs.msg import BoundingBox3D
+from tf2_sensor_msgs import tf2_sensor_msgs
+
+import v4r_util.conversions
 from scipy.spatial.transform import Rotation as R
 from grasping_pipeline_msgs.msg import BoundingBox3DStamped
 
@@ -23,10 +27,7 @@ class TF2Wrapper:
         self.listener = tf2_ros.TransformListener(self.tf2buffer)
         self.broadcaster = tf2_ros.TransformBroadcaster()
 
-    def send_transform(self,
-                       origin_frame,
-                       child_frame,
-                       pose):
+    def send_transform(self, origin_frame, child_frame, pose):
         """Broadcast transform from origin_frame to child_frame in tf2
 
         Args:
@@ -34,15 +35,10 @@ class TF2Wrapper:
             child_frame (str): Name of the child frame.
             pose (geometry_msgs/Pose): Translation and Rotation from origin_frame to child_frame
         """
-        t = pose_to_transform_stamped(pose, origin_frame, child_frame, rospy.Time.now())
+        t = v4r_util.conversions.pose_to_transform_stamped(pose, origin_frame, child_frame, rospy.Time.now())
         self.broadcaster.sendTransform(t)
 
-
-    def get_transform_between_frames(self,
-                             source_frame,
-                             target_frame,
-                             stamp = None,
-                             timeout = 3.0):
+    def get_transform_between_frames(self, source_frame, target_frame, stamp = None,timeout = 3.0):
         """Get transformation from source_frame to target_frame
 
         Args:
@@ -50,7 +46,7 @@ class TF2Wrapper:
             target_frame (str): Name of the child frame.
 
         Returns:
-            geometry_msgs/Transform: Transformation from source_frame to target_frame.
+            geometry_msgs/TransformStamped: Transformation from source_frame to target_frame.
         """
         start = rospy.Time.now()
         while not rospy.is_shutdown():
@@ -73,11 +69,8 @@ class TF2Wrapper:
 
         return trans
 
-    def transform_pose(
-        self,
-        target_frame,
-        pose):
-        """Transform pose from target_frame to source_frame
+    def transform_pose(self, target_frame, pose):
+        """Transform pose from source_frame to target_frame
 
         Args:
             target_frame (str): Name of the target frame.
@@ -92,11 +85,8 @@ class TF2Wrapper:
             p = tf2_geometry_msgs.do_transform_pose(pose, t)
             return p
     
-    def transform_point(
-        self,
-        target_frame,
-        point):
-        """Transform point from target_frame to source_frame
+    def transform_point(self, target_frame, point):
+        """Transform point from source_frame to target_frame
         
         Args:
             target_frame (str): Name of the target frame.
@@ -110,10 +100,7 @@ class TF2Wrapper:
             p = tf2_geometry_msgs.do_transform_point(point, t)
             return p
     
-    def transform_vector3(
-        self,
-        target_frame,
-        vector3):
+    def transform_vector3(self, target_frame, vector3):
         """Transform vector3 from target_frame to source_frame
         
         Args:
@@ -145,14 +132,36 @@ class TF2Wrapper:
         transformed_vec = self.transform_vector3(target_frame, vec).vector
         transformed_array = [transformed_vec.x, transformed_vec.y, transformed_vec.z]
         return np.array(transformed_array)
+    
+    def transform_path(self, target_frame, path):
+        """Transform a nav_msgs/path message to target_frame.
+        
+        Args:
+            target_frame (str): Name of the target frame.
+            path (nav_msgs/Path): Path that should be transformed to target frame
+            
+        Returns:
+            nav_msgs/Path: Transformed path.
+        """
+        transformed_path = Path()
+        transformed_path.header.frame_id = target_frame
+        transformed_path.header.stamp = path.header.stamp
+
+        for pose in path.poses:
+            transformed_pose = self.transform_pose(target_frame, pose)
+            transformed_path.poses.append(transformed_pose)
+        return transformed_path
 
     def transform_bounding_box(self, ros_bb, target_frame):
-        '''
-        Transforms bounding box to target_frame using tf.
-        Input: grasping_pipeline_msgs/BoundingBox3DStamped ros_bb
-            string target_frame
-        Output: grasping_pipeline_msgs/BoundingBox3DStamped ros_bb
-        '''
+        """Transforms bounding box to target_frame.
+
+        Args:
+            ros_bb (grasping_pipeline_msgs/BoundingBox3DStamped): ROS bounding box to be transformed.
+            target_frame (string): Name of the target frame.
+
+        Returns:
+            grasping_pipeline_msgs/BoundingBox3DStamped: Transformed bounding box.
+        """
         trans = self.get_transform_between_frames(ros_bb.header.frame_id, target_frame, ros_bb.header.stamp).transform
         translation = trans.translation
         rot = trans.rotation
@@ -181,7 +190,26 @@ class TF2Wrapper:
         transformed_bb.size = ros_bb.size
 
         return transformed_bb
+    
+    def transformPointCloud(self, cloud, target_frame, source_frame):
+        """Transform pointcloud from source_frame to target_frame.
 
+        Args:
+            cloud (sensor_msgs/PointCloud2): PointCloud2 message to be transformed.
+            target_frame (string): Name of the target frame.
+            source_frame (string): Name of the source frame.
+
+        Returns:
+            sensor_msgs/PointCloud2: Transformed PointCloud2 message.
+        """
+        transform = self.get_transform_between_frames(source_frame, target_frame, cloud.header.stamp)
+        return tf2_sensor_msgs.do_transform_cloud(cloud, transform)
+    
+
+    
+    # ------------------------------------------------------------------------------
+    # Moved functions. To be removed - please don't use them.
+    # ------------------------------------------------------------------------------
     def quaternion2euler(self, quaternion):
         """Convert quaternion to euler RPY angles.
 
@@ -191,9 +219,8 @@ class TF2Wrapper:
         Returns:
             float: roll, pitch, yaw [rad].
         """
-        angles = transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
-    
-        return angles[0], angles[1], angles[2]
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.quaternion2euler instead.")
+        return v4r_util.conversions.quaternion2euler(quaternion)
     
 
     def euler2quaternion(self, euler):
@@ -205,12 +232,9 @@ class TF2Wrapper:
         Returns:
             geometry_msgs/Quaternion: Quaternion.
         """
-        if isinstance(euler, Point):
-            q = transforms3d.euler.euler2quat(euler.x, euler.y, euler.z)
-        elif isinstance(euler, list) or isinstance(euler, tuple):
-            q = transforms3d.euler.euler2quat(euler[0], euler[1], euler[2])
-
-        return Quaternion(x=q[1], y=q[2], z=q[3], w=q[0])
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.euler2quaternion instead.")
+        return v4r_util.conversions.euler2quaternion(euler)
+    
     
     def rotmat2quaternion(self, rotmat):
         """Convert rotation matrix to quaternion.
@@ -221,15 +245,31 @@ class TF2Wrapper:
         Returns:
             geometry_msgs/Quaternion: Quaternion.
         """
-        q = R.from_matrix(rotmat).as_quat()
-        return Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.rotmat2quaternion instead.")
+        return v4r_util.conversions.rotmat2quaternion(rotmat)
 
     def trans2transmat(self, trans):
+        """
+        Transform geometry_msgs/Transform to numpy 4x4 transformation matrix.
 
-        rot = transforms3d.quaternions.quat2mat(
-            [trans.transform.rotation.w, trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z])
-        transmat = np.eye(4)
-        transmat[:3, :3] = rot
-        transmat[:3, 3] = [trans.transform.translation.x,
-                        trans.transform.translation.y, trans.transform.translation.z]
-        return transmat
+        Args:
+            geometry_msgs/Transform: Transformation to be converted.
+
+        Returns:
+            np.ndarray: 4x4 transformation matrix.
+        """
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.trans2transmat instead.")
+        return v4r_util.conversions.trans2transmat(trans)
+    
+    def transmat2trans(self, transmat):
+        """
+        Transform numpy 4x4 transformation matrix to geometry_msgs/Transform.
+
+        Args:
+            transmat (np.ndarray): Transformation matrix to be converted.
+
+        Returns:
+            geometry_msgs/Transform: Transformed geometry_msgs/Transform.   
+        """
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.transmat2trans instead.")
+        return v4r_util.conversions.transmat2trans(transmat)

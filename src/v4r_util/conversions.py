@@ -307,7 +307,7 @@ def ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, clear_old_markers=True):
 # ------------------------------------------------------------------------------
 # Angles/Transformation/Quaternions conversions
 # ------------------------------------------------------------------------------
-def quaternion2euler(quaternion):
+def quaternion_to_euler(quaternion):
     """Convert quaternion to euler RPY angles.
 
     Args:
@@ -321,7 +321,7 @@ def quaternion2euler(quaternion):
     return angles[0], angles[1], angles[2]
 
 
-def euler2quaternion(euler):
+def euler_to_quaternion(euler):
     """Convert euler RPY angles to quaternion.
 
     Args:
@@ -337,7 +337,7 @@ def euler2quaternion(euler):
 
     return geometry_msgs.msg.Quaternion(x=q[1], y=q[2], z=q[3], w=q[0])
 
-def rotmat2quaternion(rotmat):
+def rotmat_to_quaternion(rotmat):
     """Convert rotation matrix to quaternion.
 
     Args:
@@ -349,7 +349,7 @@ def rotmat2quaternion(rotmat):
     q = R.from_matrix(rotmat).as_quat()
     return geometry_msgs.msg.Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
 
-def trans2transmat(trans):
+def trans_to_transmat(trans):
     """
     Transform geometry_msgs/Transform to numpy 4x4 transformation matrix.
 
@@ -367,7 +367,7 @@ def trans2transmat(trans):
                     trans.transform.translation.y, trans.transform.translation.z]
     return transmat
 
-def transmat2trans(transmat):
+def transmat_to_trans(transmat):
     """
     Transform numpy 4x4 transformation matrix to geometry_msgs/Transform.
 

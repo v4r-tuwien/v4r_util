@@ -210,7 +210,7 @@ class TF2Wrapper:
     # ------------------------------------------------------------------------------
     # Moved functions. To be removed - please don't use them.
     # ------------------------------------------------------------------------------
-    def quaternion2euler(self, quaternion):
+    def quaternion_to_euler(self, quaternion):
         """Convert quaternion to euler RPY angles.
 
         Args:
@@ -219,11 +219,11 @@ class TF2Wrapper:
         Returns:
             float: roll, pitch, yaw [rad].
         """
-        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.quaternion2euler instead.")
-        return v4r_util.conversions.quaternion2euler(quaternion)
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.quaternion_to_euler instead.")
+        return v4r_util.conversions.quaternion_to_euler(quaternion)
     
 
-    def euler2quaternion(self, euler):
+    def euler_to_quaternion(self, euler):
         """Convert euler RPY angles to quaternion.
 
         Args:
@@ -232,11 +232,11 @@ class TF2Wrapper:
         Returns:
             geometry_msgs/Quaternion: Quaternion.
         """
-        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.euler2quaternion instead.")
-        return v4r_util.conversions.euler2quaternion(euler)
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.euler_to_quaternion instead.")
+        return v4r_util.conversions.euler_to_quaternion(euler)
     
     
-    def rotmat2quaternion(self, rotmat):
+    def rotmat_to_quaternion(self, rotmat):
         """Convert rotation matrix to quaternion.
 
         Args:
@@ -245,10 +245,10 @@ class TF2Wrapper:
         Returns:
             geometry_msgs/Quaternion: Quaternion.
         """
-        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.rotmat2quaternion instead.")
-        return v4r_util.conversions.rotmat2quaternion(rotmat)
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.rotmat_to_quaternion instead.")
+        return v4r_util.conversions.rotmat_to_quaternion(rotmat)
 
-    def trans2transmat(self, trans):
+    def trans_to_transmat(self, trans):
         """
         Transform geometry_msgs/Transform to numpy 4x4 transformation matrix.
 
@@ -258,10 +258,10 @@ class TF2Wrapper:
         Returns:
             np.ndarray: 4x4 transformation matrix.
         """
-        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.trans2transmat instead.")
-        return v4r_util.conversions.trans2transmat(trans)
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.trans_to_transmat instead.")
+        return v4r_util.conversions.trans_to_transmat(trans)
     
-    def transmat2trans(self, transmat):
+    def transmat_to_trans(self, transmat):
         """
         Transform numpy 4x4 transformation matrix to geometry_msgs/Transform.
 
@@ -271,5 +271,5 @@ class TF2Wrapper:
         Returns:
             geometry_msgs/Transform: Transformed geometry_msgs/Transform.   
         """
-        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.transmat2trans instead.")
-        return v4r_util.conversions.transmat2trans(transmat)
+        rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.transmat_to_trans instead.")
+        return v4r_util.conversions.transmat_to_trans(transmat)

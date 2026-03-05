@@ -38,7 +38,7 @@ class TF2Wrapper:
         t = v4r_util.conversions.pose_to_transform_stamped(pose, origin_frame, child_frame, rospy.Time.now())
         self.broadcaster.sendTransform(t)
 
-    def get_transform_between_frames(self, source_frame, target_frame, stamp = None,timeout = 3.0):
+    def get_transform_between_frames(self, source_frame, target_frame, stamp = None, timeout = 3.0):
         """Get transformation from source_frame to target_frame
 
         Args:
@@ -69,19 +69,22 @@ class TF2Wrapper:
 
         return trans
 
-    def transform_pose(self, target_frame, pose):
+    def transform_pose(self, target_frame, pose, stamp=None, timeout=3.0):
         """Transform pose from source_frame to target_frame
 
         Args:
             target_frame (str): Name of the target frame.
             pose (geometry_msgs/PoseStamped): pose that should be transformed from source to target frame
+            stamp (rospy.Time, optional): Time of the transform. If None, latest available transform is used. Defaults to None.
+            timeout (float, optional): Timeout in seconds. Defaults to 3.0.
 
         Returns:
             geometry_msgs/PoseStamped: Transformed pose.
         """
+
         while not rospy.is_shutdown():
             
-            t = self.get_transform_between_frames(pose.header.frame_id, target_frame, pose.header.stamp)
+            t = self.get_transform_between_frames(pose.header.frame_id, target_frame, stamp, timeout=timeout)
             p = tf2_geometry_msgs.do_transform_pose(pose, t)
             return p
     

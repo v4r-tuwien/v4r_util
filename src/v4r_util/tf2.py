@@ -105,6 +105,7 @@ class TF2Wrapper:
     
     def transform_vector3(self, target_frame, vector3):
         """Transform vector3 from target_frame to source_frame
+        This only transform rotation, no translation
         
         Args:
             target_frame (str): Name of the target frame.
@@ -119,7 +120,8 @@ class TF2Wrapper:
             return p
     
     def transform_3d_array(self, source_frame, target_frame, array):
-        """Transform 3d array from source_frame to target_frame
+        """Transform 3d array from source_frame to target_frame.
+        This only transform rotation, no translation
         
         Args:
             source_frame (str): Name of the source frame.
@@ -130,7 +132,7 @@ class TF2Wrapper:
         Returns:
             np.ndarray: Transformed 3d array.
         """
-        header = Header(frame_id = source_frame, stamp = rospy.Time.now())
+        header = Header(frame_id = source_frame, stamp = rospy.Time(0))
         vec = Vector3Stamped(header=header, vector=Vector3(x=array[0], y=array[1], z=array[2]))
         transformed_vec = self.transform_vector3(target_frame, vec).vector
         transformed_array = [transformed_vec.x, transformed_vec.y, transformed_vec.z]

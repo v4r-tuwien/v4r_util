@@ -1,12 +1,12 @@
-
-import rospy
+import rclpy
+from rclpy.node import Node
 import copy
 from visualization_msgs.msg import MarkerArray, Marker
 from vision_msgs.msg import BoundingBox3DArray, BoundingBox3D
 from scipy.spatial.transform import Rotation as R
 
 
-class RvizVisualizer:
+class RvizVisualizer():
     '''
     Allows for easy visualization of BoundingBox3DArray in rviz.
     Initialize with a topic name, and then order the visualization via
@@ -14,11 +14,13 @@ class RvizVisualizer:
     aswell as clear markers from certain namespaces.
     '''
 
-    def __init__(self, topic="TablePlaneExtractorVisualizer"):
-        self.pub = rospy.Publisher(
-            topic, 
-            MarkerArray, 
-            queue_size=10)
+    def __init__(self, node, topic="TablePlaneExtractorVisualizer"):
+        self.node = node
+
+        self.pub = self.node.create_publisher(
+            MarkerArray,
+            topic,             
+            10)
         self.markers = {}
         self.ids = {}
 
@@ -27,7 +29,7 @@ class RvizVisualizer:
         Publishes a single BoundingBox3D to rviz in the given namespace.
         '''
         if ros_bb is None:
-            rospy.logerr("No bounding box found")
+            self.node.get_logger().error("No bounding box found")
             return
         ros_bb_arr = BoundingBox3DArray()
         ros_bb_arr.header = header
@@ -40,7 +42,7 @@ class RvizVisualizer:
         Publishes a BoundingBox3DArray to rviz in the given namespace.
         '''
         if ros_bb_arr is None:
-            rospy.logerr("No bounding boxes found")
+            self.node.get_logger().error("No bounding boxes found")
             return
 
         marker_arr = self.ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, namespace, clear_old_markers)
@@ -53,7 +55,7 @@ class RvizVisualizer:
         '''
 
         if o3d_bb_arr is None:
-            rospy.logerr("No bounding boxes found")
+            self.node.get_logger().error("No bounding boxes found")
             return
         ros_bb_arr = BoundingBox3DArray()
         ros_bb_arr.header = header
@@ -68,16 +70,16 @@ class RvizVisualizer:
         Output: visualization_msgs/Marker marker
         '''
         if ros_bb is None:
-            rospy.logerr("No bounding box found")
+            self.node.get_logger().error("No bounding box found")
             return
 
         if header is None:
-            rospy.logerr("No header")
+            self.node.get_logger().error("No header")
             return
 
         marker = Marker()
         marker.header.frame_id = header.frame_id
-        marker.header.stamp = rospy.get_rostime()
+        marker.header.stamp = self.node.get_clock().now().to_msg()
         marker.ns = namespace
         marker.id = id
         marker.type = marker.CUBE
@@ -96,7 +98,7 @@ class RvizVisualizer:
         regardless of the namespace
         '''
         if namespace not in self.markers.keys() and namespace != "":
-            rospy.logerr("No markers with namespace {} found".format(namespace))
+            self.node.get_logger().error("No markers with namespace {} found".format(namespace))
             return
         marker_arr = MarkerArray()
         marker = Marker()

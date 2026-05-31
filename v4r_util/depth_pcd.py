@@ -6,9 +6,8 @@ import open3d as o3d
 import copy
 
 # ROS imports
-import rospy
-import ros_numpy
-import open3d_ros_helper.open3d_ros_helper as orh
+import rclpy
+#import open3d_ros2_helper.open3d_ros2_helper as orh
 from sensor_msgs.msg import Image
 
 # V4R imports
@@ -261,10 +260,13 @@ def filter_pcd_around_path(path_points, pcd, filter_coeff=3.0):
     """
     if path_points.ndim != 2:
         if len(path_points) == 3:
-            rospy.logwarn("Only as single path point has been passed. Pointcloud will be filtered around it as a center with a distance of 0.5m.")
+            logger = rclpy.logging.get_logger('v4r_util.depth_pcd')
+            logger.warn("Only a single path point has been passed. "
+            "Pointcloud will be filtered around it as a center with a distance of 0.5m.")
             return filter_pcd(path_points, pcd, 1)
         elif len(path_points) == 0:
-            rospy.logwarn("Empty path passed. Will return an unfiltered pointcloud.")
+            logger = rclpy.logging.get_logger('v4r_util.depth_pcd')
+            logger.warn("Empty path passed. Will return an unfiltered pointcloud.")
             return pcd
 
     # Get middle point of the path and filter pcd around it

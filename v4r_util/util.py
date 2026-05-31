@@ -4,7 +4,7 @@
 import numpy as np
 
 # ROS imports
-import rospy
+import rclpy
 from geometry_msgs.msg import Pose
 
 # V4R imports
@@ -50,7 +50,7 @@ def rotmat_around_axis(axis, angle):
 # Deprecated/Moved functions. To be removed - please don't use them.
 # ------------------------------------------------------------------------------
 def create_ros_bb_stamped(center, extent, rot_mat, frame_id, stamp):
-    rospy.logwarn("This function has been moved to v4r_util.bb. Please use v4r_util.bb.create_ros_bb_stamped instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.bb. Please use v4r_util.bb.create_ros_bb_stamped instead.")
     return v4r_util.bb.create_ros_bb_stamped(center, extent, rot_mat, frame_id, stamp)
 
 def o3d_bb_to_ros_bb(o3d_bb): # Copied into v4r_conversions
@@ -59,7 +59,7 @@ def o3d_bb_to_ros_bb(o3d_bb): # Copied into v4r_conversions
     Input: open3d.geometry.OrientedBoundingBox o3d_bb
     Output: vision_msgs/BoundingBox3D ros_bb
     '''
-    rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.o3d_bb_to_ros_bb instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.o3d_bb_to_ros_bb instead.")
     return v4r_util.conversions.o3d_bb_to_ros_bb(o3d_bb)
 
 def o3d_bb_to_ros_bb_stamped(o3d_bb, frame_id, stamp): # Copied into v4r_conversions
@@ -68,7 +68,7 @@ def o3d_bb_to_ros_bb_stamped(o3d_bb, frame_id, stamp): # Copied into v4r_convers
     Input: open3d.geometry.OrientedBoundingBox o3d_bb
     Output: v4r_msgs/BoundingBox3DStamped ros_bb
     '''
-    rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.o3d_bb_to_ros_bb_stamped instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.o3d_bb_to_ros_bb_stamped instead.")
     return v4r_util.conversions.o3d_bb_to_ros_bb_stamped(o3d_bb, frame_id, stamp)
 
 def ros_bb_to_o3d_bb(ros_bb): # Copied into v4r_conversions
@@ -77,7 +77,7 @@ def ros_bb_to_o3d_bb(ros_bb): # Copied into v4r_conversions
     Input: vision_msgs/BoundingBox3D ros_bb
     Output: open3d.geometry.OrientedBoundingBox o3d_bb
     '''
-    rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_to_o3d_bb instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_to_o3d_bb instead.")
     return v4r_util.conversions.ros_bb_to_o3d_bb(ros_bb)
 
 def ros_bb_arr_to_o3d_bb_list(ros_bb_arr): # Copied into v4r_conversions
@@ -86,7 +86,7 @@ def ros_bb_arr_to_o3d_bb_list(ros_bb_arr): # Copied into v4r_conversions
     Input: vision_msgs/BoundingBox3DArray ros_bb_arr
     Output: list[Open3d.geometry.OrientedBoundingBox] o3d_bb_list
     '''
-    rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_arr_to_o3d_bb_list instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_arr_to_o3d_bb_list instead.")
     return v4r_util.conversions.ros_bb_arr_to_o3d_bb_list(ros_bb_arr)
 
 def transformPointCloud(cloud, target_frame, source_frame, tf_buffer): # Copied into v4r.tf2
@@ -96,7 +96,7 @@ def transformPointCloud(cloud, target_frame, source_frame, tf_buffer): # Copied 
             tf2_ros.Buffer tf_buffer
     Output: sensor_msgs/PointCloud2 transformedCloud
     '''
-    rospy.logerr("This function is deprecated. Use transform_cloud form the TFWrapper (tf2.py) instead.")
+    rclpy.logging.get_logger('v4r_util.util').error("This function is deprecated. Use transform_cloud form the TFWrapper (tf2.py) instead.")
     raise NotImplementedError("This function is deprecated. Use transform_cloud form the TFWrapper (tf2.py) instead.")
 
 def ros_bb_to_rviz_marker(ros_bb, ns="sasha"): # Copied into v4r_conversions
@@ -105,7 +105,7 @@ def ros_bb_to_rviz_marker(ros_bb, ns="sasha"): # Copied into v4r_conversions
     Input: grasping_pipeline_msgs/BoundingBox3DStamped ros_bb
     Output: visualization_msgs/Marker marker
     '''
-    rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_to_rviz_marker instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_to_rviz_marker instead.")
     return v4r_util.conversions.ros_bb_to_rviz_marker(ros_bb, ns)
     
 
@@ -117,7 +117,7 @@ def ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, clear_old_markers=True): # Copied 
            bool clear_old_markers
     Output: visualization_msgs/MarkerArray marker_arr
     '''
-    rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_arr_to_rviz_marker_arr instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.ros_bb_arr_to_rviz_marker_arr instead.")
     return v4r_util.conversions.ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, clear_old_markers)
 
 
@@ -129,7 +129,7 @@ def o3d_bb_list_to_ros_bb_arr(o3d_bb_list, frame_id, stamp): # Copied into v4r_c
            float stamp
     Output: vision_msgs/BoundingBox3DArray ros_bb_arr
     '''
-    rospy.logwarn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.o3d_bb_list_to_ros_bb_arr instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.conversions. Please use v4r_util.conversions.o3d_bb_list_to_ros_bb_arr instead.")
     return v4r_util.conversions.o3d_bb_list_to_ros_bb_arr(o3d_bb_list, frame_id, stamp)
 
 
@@ -139,7 +139,7 @@ def get_minimum_oriented_bounding_box(o3d_pc): # copied into bb.py
     Input: open3d.geometry.PointCloud o3d_pc
     Output: open3d.geometry.OrientedBoundingBox o3d_bb
     '''
-    rospy.logwarn("This function has been moved to v4r_util.bb. Please use v4r_util.bb.get_minimum_oriented_bounding_box instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.bb. Please use v4r_util.bb.get_minimum_oriented_bounding_box instead.")
     return v4r_util.bb.get_minimum_oriented_bounding_box(o3d_pc)
 
  
@@ -151,7 +151,7 @@ def transform_pose(target_frame, source_frame, pose, listener=None): # Copied in
            geometry_msgs/Pose pose
     Output: geometry_msgs/PoseStamped transformed_pose
     '''
-    rospy.logerr("This function is deprecated. Use transform_pose form the TFWrapper (tf2.py) instead.")
+    rclpy.logging.get_logger('v4r_util.util').error("This function is deprecated. Use transform_pose form the TFWrapper (tf2.py) instead.")
     raise NotImplementedError("This function is deprecated. Use transform_pose form the TFWrapper (tf2.py) instead.")
 
 
@@ -164,16 +164,16 @@ def transform_bounding_box(ros_bb, source_frame, target_frame, listener=None): #
            tf/Transformlistener listener
     Output: vision_msgs/BoundingBox3D ros_bb
     '''
-    rospy.logerr("This function is deprecated. Use transform_bounding_box form the TFWrapper (tf2.py) instead.")
+    rclpy.logging.get_logger('v4r_util.util').error("This function is deprecated. Use transform_bounding_box form the TFWrapper (tf2.py) instead.")
     raise NotImplementedError("This function is deprecated. Use transform_bounding_box form the TFWrapper (tf2.py) instead.")
  
 
 def get_best_aligning_axis(coordinate_axis_vec, reference_frame_axes): # copied into alignment.py
-    rospy.logwarn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.get_best_aligning_axis instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.get_best_aligning_axis instead.")
     return v4r_util.alignment.get_best_aligning_axis(coordinate_axis_vec, reference_frame_axes)
 
 def get_best_aligning_axis_to_world_frame(coordinate_axis_vec): # copied into alignment.py
-    rospy.logwarn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.get_best_aligning_axis_to_world_frame instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.get_best_aligning_axis_to_world_frame instead.")
     return v4r_util.alignment.get_best_aligning_axis_to_world_frame(coordinate_axis_vec)
 
     
@@ -184,12 +184,12 @@ def align_transformation(transform): # copied into alignment.py
     Input: np.array homogenous transformation (4x4)
     Output: np.array aligned homogenous transformation (4x4)
     '''
-    rospy.logwarn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.align_transformation instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.align_transformation instead.")
     return v4r_util.alignment.align_transformation(transform)
 
 def align_pose_rotation(pose):# copied into alignment.py
     # ros pose, not pose stamped
-    rospy.logwarn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.align_pose_rotation instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.align_pose_rotation instead.")
     return v4r_util.alignment.align_pose_rotation(pose)
 
 def align_bounding_box_rotation(bb): # copied into alignment.py
@@ -199,11 +199,11 @@ def align_bounding_box_rotation(bb): # copied into alignment.py
     Input: o3d/OrientedBoundingBox bb
     Output: o3d/OrientedBoundingBox bb
     '''
-    rospy.logwarn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.align_bounding_box_rotation instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.alignment. Please use v4r_util.alignment.align_bounding_box_rotation instead.")
     return v4r_util.alignment.align_bounding_box_rotation(bb)
 
 
 
 def transform_bounding_box_w_transform(ros_bb, transform): # copied into bb.py
-    rospy.logwarn("This function has been moved to v4r_util.bb. Please use v4r_util.bb.transform_bounding_box_w_transform instead.")
+    rclpy.logging.get_logger('v4r_util.util').warn("This function has been moved to v4r_util.bb. Please use v4r_util.bb.transform_bounding_box_w_transform instead.")
     return v4r_util.bb.transform_bounding_box_w_transform(ros_bb, transform)

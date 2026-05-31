@@ -4,21 +4,25 @@ Conversions which don't include ROS messages are in their own modules.
 """
 
 # Generic python imports
+import copy
 from copy import deepcopy
+from std_msgs.msg import Header
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import open3d as o3d
 import transforms3d
 
-# ROS imports
-import rospy
+# ROS2 imports
+import rclpy
 import std_msgs
 import geometry_msgs
 import sensor_msgs
+from sensor_msgs.msg import PointCloud2, PointField
 import vision_msgs
 import visualization_msgs
-import ros_numpy
-import open3d_ros_helper.open3d_ros_helper as orh
+from cv_bridge import CvBridge
+import sensor_msgs_py.point_cloud2 as pc2
+#from open3d_ros2_helper import open3d_ros2_helper as orh
 
 # V4R imports
 import grasping_pipeline_msgs.msg
@@ -104,7 +108,11 @@ def np_transform_to_ros_transform(transform):
 def np_transform_to_ros_pose(transform):
     """np.array of shape (4,4) to geometry_msgs/Pose"""
     p = geometry_msgs.msg.Pose()
-    p.position = list_to_vector3(transform[:3,3])
+    p.position = geometry_msgs.msg.Point(
+        x=float(transform[0, 3]),
+        y=float(transform[1, 3]),
+        z=float(transform[2, 3])
+    )
     p.orientation = rot_mat_to_quat(transform[:3,:3])
     
     return deepcopy(p)
@@ -244,11 +252,12 @@ def o3d_bb_list_to_ros_bb_arr(o3d_bb_list, frame_id, stamp):
 # ------------------------------------------------------------------------------
 # ROS BoundingBox ↔ RViz Marker conversions
 # ------------------------------------------------------------------------------
-def ros_bb_to_rviz_marker(ros_bb, ns="sasha"):
+def ros_bb_to_rviz_marker(ros_bb, node, ns="sasha"):
     """Converts BoundingBox3D into rviz Marker.
 
     Args:
         ros_bb (grasping_pipeline_msgs/BoundingBox3DStamped): ROS bounding box.
+        node (rclpy.node.Node): ROS2 node.
         ns (str, optional): Namespace of the marker. Defaults to "sasha".
 
     Returns:
@@ -256,7 +265,7 @@ def ros_bb_to_rviz_marker(ros_bb, ns="sasha"):
     """
     marker = visualization_msgs.msg.Marker()
     marker.header.frame_id = ros_bb.header.frame_id
-    marker.header.stamp = rospy.Time.now()
+    marker.header.stamp = node.get_clock().now().to_msg()
     marker.ns = ns
     marker.id = 0
     marker.type = marker.CUBE
@@ -267,12 +276,13 @@ def ros_bb_to_rviz_marker(ros_bb, ns="sasha"):
     marker.color.a = 0.6
     return marker
 
-def ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, clear_old_markers=True):
+def ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, node, clear_old_markers=True):
     """Converts BoundingBox3DArray into rviz MarkerArray. If clear_old_markers is set, 
     a delete_all marker is added as the first marker so that old rviz markers get cleared.
 
     Args:
         ros_bb_arr (vision_msgs/BoundingBox3DArray): ROS bounding box array.
+        node (rclpy.node.Node): ROS2 node.
         clear_old_markers (bool, optional): If set, a delete_all marker is added as the first marker. Defaults to True.
     Returns:
         visualization_msgs/MarkerArray: RViz marker array.
@@ -289,7 +299,7 @@ def ros_bb_arr_to_rviz_marker_arr(ros_bb_arr, clear_old_markers=True):
     for obj in ros_bb_arr.boxes:
         marker = visualization_msgs.msg.Marker()
         marker.header.frame_id = ros_bb_arr.header.frame_id
-        marker.header.stamp = rospy.get_rostime()
+        marker.header.stamp = node.get_clock().now().to_msg()
         marker.ns = "ObjectsOnTable"
         marker.id = id
         id = id + 1
@@ -404,7 +414,7 @@ def convert_np_depth_img_to_o3d_pcd(depth_img, ros_cam_info, depth_scale=1000, p
     """
     width = ros_cam_info.width
     height = ros_cam_info.height
-    intrinsics = np.array(ros_cam_info.K).reshape(3, 3)
+    intrinsics = np.array(ros_cam_info._k).reshape(3, 3)
     fx = intrinsics[0, 0]
     fy = intrinsics[1, 1]
     cx = intrinsics[0, 2]
@@ -420,7 +430,65 @@ def convert_np_depth_img_to_o3d_pcd(depth_img, ros_cam_info, depth_scale=1000, p
             project_valid_depth_only=project_valid_depth_only)
     return o3d_pcd
 
-def convert_ros_depth_img_to_pcd(ros_depth_img, ros_cam_info, depth_scale=1000, project_valid_depth_only=True):
+# Removed ros2_numpy conversions, since we want to avoid maintaining our own fork of ros2_numpy. 
+# Instead we use CvBridge for the conversions between ROS images and numpy arrays.
+def o3dpc_to_rospc(o3dpc, frame_id=None, stamp=None, node=None):
+    BIT_MOVE_16 = 2**16
+    BIT_MOVE_8 = 2**8
+    points = np.asarray(copy.deepcopy(o3dpc.points))
+    n_points = points.shape[0]
+
+    has_color = o3dpc.has_colors()
+
+    # header handling
+    header = Header()
+    if frame_id is not None:
+        header.frame_id = frame_id
+
+    if stamp is not None:
+        header.stamp = stamp
+    elif node is not None:
+        header.stamp = node.get_clock().now().to_msg()
+
+    if has_color:
+        colors = np.asarray(copy.deepcopy(o3dpc.colors))
+        colors = np.floor(colors * 255).astype(np.uint32)
+
+        rgb = (
+            colors[:, 0] * BIT_MOVE_16 +
+            colors[:, 1] * BIT_MOVE_8 +
+            colors[:, 2]
+        ).astype(np.uint32)
+
+        points_rgb = [
+            (points[i, 0], points[i, 1], points[i, 2], rgb[i])
+            for i in range(points.shape[0])
+        ]
+
+        fields = [
+            PointField(name='x', offset=0,  datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4,  datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8,  datatype=PointField.FLOAT32, count=1),
+            PointField(name='rgb', offset=12, datatype=PointField.FLOAT32, count=1),
+        ]
+        
+        return pc2.create_cloud(header, fields, points_rgb)
+    else:
+        points_xyz = [
+            (points[i, 0], points[i, 1], points[i, 2])
+            for i in range(points.shape[0])
+        ]
+
+        fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+        ]
+
+        return pc2.create_cloud(header, fields, points_xyz)
+    
+
+def convert_ros_depth_img_to_pcd(ros_depth_img, ros_cam_info, depth_scale=1000, project_valid_depth_only=False):
     """
     Converts a ROS depth image to a point cloud.
 
@@ -434,9 +502,10 @@ def convert_ros_depth_img_to_pcd(ros_depth_img, ros_cam_info, depth_scale=1000, 
         ros_pcd (sensor_msgs/PointCloud2): ROS point cloud message.
         o3d_pcd (open3d.geometry.PointCloud): Open3D point cloud object.
     """
-    depth_img = ros_numpy.numpify(ros_depth_img)
+    bridge = CvBridge()
+    depth_img = bridge.imgmsg_to_cv2(ros_depth_img)
     o3d_pcd = convert_np_depth_img_to_o3d_pcd(depth_img, ros_cam_info, depth_scale, project_valid_depth_only)
-    ros_pcd = orh.o3dpc_to_rospc(o3d_pcd, frame_id = ros_depth_img.header.frame_id, stamp=ros_depth_img.header.stamp)
+    ros_pcd = o3dpc_to_rospc(o3d_pcd, frame_id = ros_depth_img.header.frame_id, stamp=ros_depth_img.header.stamp)
     return ros_pcd, o3d_pcd
 
 def convert_np_label_img_to_np_color_img(np_label_img, np_rgb_img):
@@ -449,4 +518,5 @@ def convert_np_label_img_to_np_color_img(np_label_img, np_rgb_img):
 
 def convert_np_label_img_to_ros_color_img(np_label_img, np_rgb_img):
     colors = convert_np_label_img_to_np_color_img(np_label_img, np_rgb_img)
-    return ros_numpy.msgify(sensor_msgs.msg.Image, colors, encoding='rgb8')
+    bridge = CvBridge()
+    return bridge.cv2_to_imgmsg(colors, encoding='rgb8')

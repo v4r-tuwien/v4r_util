@@ -7,7 +7,7 @@ from scipy.spatial.transform import Rotation as R
 from enum import IntEnum
 
 # ROS imports
-import rospy
+import rclpy
 from geometry_msgs.msg import Quaternion
 
 

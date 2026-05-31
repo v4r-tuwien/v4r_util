@@ -5,7 +5,7 @@ Module for different functions related to bounding boxes.
 # Generic python imports
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import rospy
+import rclpy
 
 # ROS imports
 from vision_msgs.msg import BoundingBox3D
@@ -227,6 +227,7 @@ def transform_bounding_box(ros_bb, source_frame, target_frame, listener=None):
     Returns:
         grasping_pipeline_msgs/BoundingBox3DStamped: Transformed bounding box.
     """
-    rospy.logerr("This function is deprecated. Use transform_bounding_box from the TFWrapper (tf2.py) instead.")
+    logger = rclpy.logging.get_logger("v4r_util.bb")
+    logger.error("This function is deprecated. Use transform_bounding_box from the TFWrapper (tf2.py) instead.")
     raise NotImplementedError("This function is deprecated. Use transform_bounding_box from the TFWrapper (tf2.py) instead.")
     
